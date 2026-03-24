@@ -1,6 +1,10 @@
+import dotenv from 'dotenv'
+dotenv.config()
 import express from 'express';
 import cors from 'cors';
-import './connections/db_connection.ts'
+import './connections/db_connection'
+import './connections/vogaye_connection'
+
 
 const app = express();
 
