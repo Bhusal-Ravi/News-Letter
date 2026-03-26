@@ -4,6 +4,7 @@ import express from 'express';
 import cors from 'cors';
 import './connections/db_connection'
 import './connections/vogaye_connection'
+import { handleRssFeed } from './services/rssFeed';
 
 
 const app = express();
@@ -22,6 +23,8 @@ app.use(express.json());
 app.get('/', async (req, res) => {
 	res.json('Server Healthy');
 });
+
+handleRssFeed()
 
 app.listen(3000, () => {
 	console.log('Server started on port 3000');

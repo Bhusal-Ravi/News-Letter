@@ -11,3 +11,14 @@
 //     model:string,
     
 // }
+
+export interface Rss_Feed_Type {
+    creator:string,
+    title:string,
+    link:string,
+    pubDate:string,
+    content:string,
+    contentSnippet:string
+    guid:string
+    isoDate:string
+}
