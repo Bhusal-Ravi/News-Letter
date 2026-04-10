@@ -22,3 +22,22 @@ export interface Rss_Feed_Type {
     guid:string
     isoDate:string
 }
+
+export interface Rss_Clean_Table {
+    title:string,
+    source:string,
+    content:string,
+    published_date:string,
+    guid:string,
+    category:"worldnews"
+}
+
+export interface Rss_Clean_Table_Embedding {
+    title:string,
+    source:string,
+    content:string,
+    published_date:string,
+    guid:string,
+    category:"worldnews",
+    embedding?:number[]
+}

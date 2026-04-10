@@ -1,6 +1,8 @@
 import Parser from 'rss-parser'
-import { Rss_Feed_Type } from '../Types/Api_Types'
+import { Rss_Clean_Table, Rss_Clean_Table_Embedding, Rss_Feed_Type } from '../Types/Api_Types'
 import { client } from '../connections/vogaye_connection'
+import { client  as db_client } from '../connections/db_connection'
+import { insertIntoCleanTable } from '../sql/insert_into_clean_table'
 
 type CustomFeed= {
     foo:string
@@ -25,40 +27,83 @@ const worldNewsUrl=['https://www.aljazeera.com/xml/rss/all.xml',
 
 
 export async function handleRssFeed(){
+    let db
     try{
+        db=await db_client.connect()
         const worldNewsArray= await Promise.all(
             worldNewsUrl.map((url)=>parser.parseURL(url)) 
         )
        
         const worldNews:Rss_Feed_Type[]= worldNewsArray.flatMap((news)=>news.items) as Rss_Feed_Type[]
-        const structuredWorldNews= worldNews.map((news)=>(
+        const structuredWorldNews:Rss_Clean_Table[]= worldNews.map((news)=>(
             {
                 title:news.title,
-                link:news.link,
+                source:news.link,
                 content:news.content,
-                isoDate:news.isoDate,
+                published_date:news.isoDate,
                 guid:news.guid,
-                type:"worldnews"
+                category:"worldnews"
             }
 
         ))
 
-        const text= structuredWorldNews.map(item=>item.title.concat(".").concat(item.content))
+        // Get all the guid of rss feed
+        const newsGuid= structuredWorldNews.map((items)=>{
+            return items.guid
+        })
 
+        // Creating input paramater for guid
+        const sqlQuery= newsGuid.join(',')
+
+        // Checking the db for any duplicate news guid
+        const dupedGuid= await db.query(`select guid from clean_articles
+                                          where guid in  (
+                                            $1
+                                          )      `,[sqlQuery])
+
+            
+        
+        
+            // First phase of deduplication
+        let newStructuredWorldNews
+
+        if(dupedGuid.rowCount===0){
+            newStructuredWorldNews=structuredWorldNews
+
+        }else {
+            newStructuredWorldNews = structuredWorldNews.filter((item)=>!dupedGuid.rows.includes(item.guid))
+        }
+
+       
+
+
+        console.log(newStructuredWorldNews.length,structuredWorldNews.length)
+
+        
+
+
+        // String for generating embeddings
+
+        const text= newStructuredWorldNews.map(item=>item.title.concat(".").concat(item.content))
+
+        // Generate Embedding
         const result= await client.embed({
                             input:text,
-                            model:'voyage-4-lite'
+                            model:'voyage-4-lite',
+                            
                         })
 
-        const newsWithEmbeddings= structuredWorldNews.map((item,index)=>({
+        
+        const newsWithEmbeddings:Rss_Clean_Table_Embedding[]= newStructuredWorldNews.map((item,index)=>({
             ...item,
             embedding: result?.data?.[index].embedding
         }))
 
-
+         // Insert into Db
+          await  insertIntoCleanTable(newsWithEmbeddings)
         
 
-        console.log(newsWithEmbeddings)
+        
         
 
     }catch(error){
@@ -67,4 +112,4 @@ export async function handleRssFeed(){
     }
 }
 
-// handleRssFeed()
+  handleRssFeed()
