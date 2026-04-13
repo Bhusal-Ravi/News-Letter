@@ -22,7 +22,8 @@ const parser:Parser<CustomFeed,CustomItem>= new Parser({
 
 
 const worldNewsUrl=['https://www.aljazeera.com/xml/rss/all.xml',
-                    'http://feeds.bbci.co.uk/news/world/rss.xml'
+                    'http://feeds.bbci.co.uk/news/world/rss.xml',
+                    'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
                   ]
 
 
@@ -51,19 +52,19 @@ export async function handleRssFeed(){
         const newsGuid= structuredWorldNews.map((items)=>{
             return items.guid
         })
+        
 
         // Creating input paramater for guid
-        const sqlQuery= newsGuid.join(',')
+        
+        
 
         // Checking the db for any duplicate news guid
         const dupedGuid= await db.query(`select guid from clean_articles
-                                          where guid in  (
-                                            $1
-                                          )      `,[sqlQuery])
+                                          where guid =Any($1) `,[newsGuid])
 
             
-        
-        
+        const dupedGuids= new Set(dupedGuid.rows.map(item=>item.guid))
+       
             // First phase of deduplication
         let newStructuredWorldNews
 
@@ -71,7 +72,8 @@ export async function handleRssFeed(){
             newStructuredWorldNews=structuredWorldNews
 
         }else {
-            newStructuredWorldNews = structuredWorldNews.filter((item)=>!dupedGuid.rows.includes(item.guid))
+           
+            newStructuredWorldNews = structuredWorldNews.filter((item)=>!dupedGuids.has(item.guid))
         }
 
        
@@ -109,6 +111,8 @@ export async function handleRssFeed(){
     }catch(error){
         console.log(error)
         throw new Error
+    }finally{
+        db?.release()
     }
 }
 

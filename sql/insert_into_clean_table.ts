@@ -34,6 +34,7 @@ export async  function insertIntoCleanTable (data:Rss_Clean_Table_Embedding[]){
                                       values ${rows.join(',')}
                                       on conflict (guid) do nothing`
     
+    
     try{
         db= await client.connect()
         await db.query('BEGIN')
@@ -50,11 +51,13 @@ export async  function insertIntoCleanTable (data:Rss_Clean_Table_Embedding[]){
                                         where a.id>b.id
                                         AND a.created_at >= now() - interval '12 hours'
                                         AND b.created_at >= now() - interval '12 hours'
-                                        AND 1-(a.embedding <=> b.embedding) >= 0.92      `)
+                                        AND 1-(a.embedding <=> b.embedding) >= 0.92 
+                                        returning a.title as deleted, b.title as defendent`)
         
         if(deletion.rowCount===0){
             console.log('No articles were found to have cosine similarity >= 0.92')
         }else{
+            console.log(deletion.rows)
             console.log(`Deleted ${deletion.rowCount} items from clean_articles that may be similar`)
         }
         
