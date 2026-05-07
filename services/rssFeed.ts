@@ -1,8 +1,11 @@
 import Parser from 'rss-parser'
 import { Rss_Clean_Table, Rss_Clean_Table_Embedding, Rss_Feed_Type } from '../Types/Api_Types'
-import { client } from '../connections/vogaye_connection'
+
 import { client  as db_client } from '../connections/db_connection'
-import { insertIntoCleanTable } from '../sql/insert_into_clean_table'
+
+import { EmbeddingQueue } from '../queues/embedding_queue'
+
+const FLOW_BAR = '----------------------------------------'
 
 type CustomFeed= {
     foo:string
@@ -21,34 +24,65 @@ const parser:Parser<CustomFeed,CustomItem>= new Parser({
 })
 
 
-const worldNewsUrl=['https://www.aljazeera.com/xml/rss/all.xml',
-                    'http://feeds.bbci.co.uk/news/world/rss.xml',
-                    'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
-                  ]
+// const worldNewsUrl=['https://www.aljazeera.com/xml/rss/all.xml',
+//                     'http://feeds.bbci.co.uk/news/world/rss.xml',
+//                     'https://www.ft.com/world?format=rss',
+//                     'https://rss.nytimes.com/services/xml/rss/nyt/World.xml'
+                    
+                    
+//                   ]
 
 
-export async function handleRssFeed(){
+export async function handleRssFeed(sources:string[],category:string){
     let db
     try{
         db=await db_client.connect()
         const worldNewsArray= await Promise.all(
-            worldNewsUrl.map((url)=>parser.parseURL(url)) 
+            
+            sources.map((url)=>parser.parseURL(url)) 
+           
         )
        
         const worldNews:Rss_Feed_Type[]= worldNewsArray.flatMap((news)=>news.items) as Rss_Feed_Type[]
-        const structuredWorldNews:Rss_Clean_Table[]= worldNews.map((news)=>(
+        let structuredWorldNews:Rss_Clean_Table[]= worldNews.map((news)=>(
             {
                 title:news.title,
                 source:news.link,
-                content:news.content,
+                content:news.content.trim(),
                 published_date:news.isoDate,
                 guid:news.guid,
-                category:"worldnews"
+                category:category
             }
 
         ))
 
-        // Get all the guid of rss feed
+        console.log(`[RSS/FETCH] ${FLOW_BAR}`)
+        console.log('[RSS/FETCH] Feed fetch completed and structured format created')
+
+        structuredWorldNews = structuredWorldNews.filter((item) => item.guid != null && item.guid !== "")
+
+        return structuredWorldNews
+        
+
+
+       
+
+    }catch(error){
+        console.log('[RSS/FETCH][ERROR]', error)
+        throw error
+    }finally{
+        db?.release()
+    }
+}
+
+
+
+export async function physicalDedupe(structuredWorldNews:Rss_Clean_Table[]){
+    let db
+    try{
+        db=await db_client.connect()
+
+         // Get all the guid of rss feed
         const newsGuid= structuredWorldNews.map((items)=>{
             return items.guid
         })
@@ -79,41 +113,36 @@ export async function handleRssFeed(){
        
 
 
-        console.log(newStructuredWorldNews.length,structuredWorldNews.length)
-
-        
-
-
-        // String for generating embeddings
-
-        const text= newStructuredWorldNews.map(item=>item.title.concat(".").concat(item.content))
-
-        // Generate Embedding
-        const result= await client.embed({
-                            input:text,
-                            model:'voyage-4-lite',
-                            
-                        })
-
-        
-        const newsWithEmbeddings:Rss_Clean_Table_Embedding[]= newStructuredWorldNews.map((item,index)=>({
-            ...item,
-            embedding: result?.data?.[index].embedding
-        }))
-
-         // Insert into Db
-          await  insertIntoCleanTable(newsWithEmbeddings)
-        
-
-        
-        
-
+        console.log(`[RSS/DEDUPE] ${FLOW_BAR}`)
+        console.log('[RSS/DEDUPE] Physical deduplication completed')
+        console.log('[RSS/DEDUPE] Articles after dedupe:', newStructuredWorldNews.length, 'before dedupe:', structuredWorldNews.length)
+        return newStructuredWorldNews;
     }catch(error){
-        console.log(error)
-        throw new Error
+        console.log('[RSS/DEDUPE][ERROR]', error)
+        throw error
     }finally{
         db?.release()
     }
 }
 
-  handleRssFeed()
+
+export async function createEmbedding(newStructuredWorldNews:Rss_Clean_Table[]){
+    try{
+         // String for generating embeddings
+
+        const text= newStructuredWorldNews.map(item=>item.title.concat(".").concat(item.content?.slice(0,200)??""))
+    const articleTitles = newStructuredWorldNews.map(item => item.title)
+
+        // Generate Embedding
+        
+        console.log(`[RSS/QUEUE] ${FLOW_BAR}`)
+        console.log('[RSS/QUEUE] Publishing embedding job with article count:', text.length)
+    console.log('[RSS/QUEUE] Embedding job article titles:', articleTitles)
+        EmbeddingQueue.add('createEmbedding',{text:text,newStructuredWorldNews:newStructuredWorldNews})
+
+       
+    }catch(error){
+        console.log('[RSS/QUEUE][ERROR]', error)
+        throw error
+    }
+}

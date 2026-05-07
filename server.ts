@@ -4,8 +4,13 @@ import express from 'express';
 import cors from 'cors';
 import './connections/db_connection'
 import './connections/vogaye_connection'
+import './connections/reddis_connection'
+import { Queue, Worker } from 'bullmq'
+import { connection } from './connections/reddis_connection'; 
 import { handleRssFeed } from './services/rssFeed';
+import { pullRssFeed } from './queues/rss_feed_job';
 
+const FLOW_BAR = '----------------------------------------'
 
 const app = express();
 
@@ -24,8 +29,31 @@ app.get('/', async (req, res) => {
 	res.json('Server Healthy');
 });
 
-handleRssFeed()
+const JobRepeatQueue= new Queue('repeat',{connection})
+const JobRepeatWorker= new Worker('repeat', async job=>{
+	console.log(`[SCHEDULER] ${FLOW_BAR}`)
+	console.log('[SCHEDULER] Initiated next pull phase of news')
+	pullRssFeed()
+}, {connection})
+
+async function scheduleOperation(){
+
+const start= await JobRepeatQueue.upsertJobScheduler(
+  'my-scheduler-id',
+  { pattern: '*/30 * * * *' },
+  {
+    opts: {
+      backoff: 3,
+      attempts: 5,
+      removeOnFail: 1000,
+    },
+  },
+);
+}
+
+scheduleOperation()
+
 
 app.listen(3000, () => {
-	console.log('Server started on port 3000');
+	console.log('[SERVER] Server started on port 3000');
 });

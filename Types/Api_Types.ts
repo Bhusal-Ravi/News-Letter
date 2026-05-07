@@ -29,7 +29,7 @@ export interface Rss_Clean_Table {
     content:string,
     published_date:string,
     guid:string,
-    category:"worldnews"
+    category:string
 }
 
 export interface Rss_Clean_Table_Embedding {
@@ -38,6 +38,6 @@ export interface Rss_Clean_Table_Embedding {
     content:string,
     published_date:string,
     guid:string,
-    category:"worldnews",
+    category:string,
     embedding?:number[]
 }
