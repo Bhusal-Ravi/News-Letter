@@ -3,13 +3,13 @@
 export const NEWSLETTER_TAGS = [
     {
         category: 'worldnews',
-        description: 'International relations, diplomacy, wars, military conflicts, peace negotiations, sanctions, territorial disputes between nations and geopolitical alliances',
-        articlesPerTag: 3
+        tags: 'International relations, diplomacy, wars, military conflicts, peace negotiations, sanctions, territorial disputes between nations and geopolitical alliances',
+        articles_per_tag: 3
     },
     {
         category: 'technews',
-        description: 'Artificial intelligence breakthroughs, machine learning models, AI regulation and policy, major tech company announcements, robotics, semiconductor industry',
-        articlesPerTag: 3
+        tags: 'Artificial intelligence breakthroughs, machine learning models, AI regulation and policy, major tech company announcements, robotics, semiconductor industry',
+        articles_per_tag: 3
     },
     
 ]

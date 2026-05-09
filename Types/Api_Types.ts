@@ -41,3 +41,11 @@ export interface Rss_Clean_Table_Embedding {
     category:string,
     embedding?:number[]
 }
+
+export interface Tags {
+    tags:string,
+    category:string,
+    embedding?:number[],
+    articles_per_tag:number,
+
+}
