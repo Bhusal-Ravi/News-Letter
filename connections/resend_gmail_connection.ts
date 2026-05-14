@@ -5,5 +5,6 @@ dotenv.config()
 
 
 export const resend = new Resend(process.env.RESEND_KEYS);
-console.log(resend)
+
+if(resend) console.log("resend Connected Successfully")
 

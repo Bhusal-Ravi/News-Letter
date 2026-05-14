@@ -4,7 +4,7 @@ dotenv.config()
 import {VoyageAIClient} from 'voyageai'
 export const client= new VoyageAIClient({apiKey:process.env.VOYAGE_API_KEY})
 
- 
+ if(client) console.log("Voyage Connected Successfully")
 
 // async function checkVoyageConnection(){
 //     try{

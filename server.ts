@@ -5,6 +5,7 @@ import cors from 'cors';
 import './connections/db_connection'
 import './connections/vogaye_connection'
 import './connections/reddis_connection'
+import './connections/tavily_connection'
 import { Queue, Worker } from 'bullmq'
 import { connection } from './connections/reddis_connection'; 
 import { handleRssFeed } from './services/rssFeed';
