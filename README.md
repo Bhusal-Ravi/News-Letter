@@ -6,6 +6,10 @@ This project ingests world news from multiple RSS feeds, deduplicates and enrich
 
 ---
 
+## Vector Embedding Deduplication
+<img width="659" height="298" alt="image" src="https://github.com/user-attachments/assets/c2ae4ea0-8f0c-4b8a-9e04-6b153f27d1fd" />
+
+
 ## 📋 Project Overview
 
 This is a **production-ready news aggregation and enrichment pipeline** that:
