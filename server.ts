@@ -46,7 +46,7 @@ const start= await JobRepeatQueue.upsertJobScheduler(
     opts: {
       backoff: 3,
       attempts: 5,
-      removeOnFail: 1000,
+      removeOnFail: 200,
     },
   },
 );
