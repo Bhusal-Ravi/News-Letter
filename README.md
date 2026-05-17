@@ -9,6 +9,12 @@ This project ingests world news from multiple RSS feeds, deduplicates and enrich
 ## Vector Embedding Deduplication
 <img width="659" height="298" alt="image" src="https://github.com/user-attachments/assets/c2ae4ea0-8f0c-4b8a-9e04-6b153f27d1fd" />
 
+## Web Search Queue
+<img width="1192" height="328" alt="image" src="https://github.com/user-attachments/assets/a3ae12ef-7e1f-46f3-a2af-2a8ff94b2d1c" />
+
+## Llm Summarization For Each New News Article
+<img width="1640" height="448" alt="image" src="https://github.com/user-attachments/assets/ed39253b-a292-4c08-919d-753b12274ea0" />
+
 
 ## 📋 Project Overview
 
