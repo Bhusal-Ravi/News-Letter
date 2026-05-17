@@ -1,4 +1,5 @@
 import dotenv from 'dotenv'
+import IORedis from 'ioredis'
 
 dotenv.config()
 
@@ -7,11 +8,14 @@ const redisPort = Number(process.env.REDIS_PORT || 6379)
 const redisUsername = process.env.REDIS_USERNAME || undefined
 const redisPassword = process.env.REDIS_PASSWORD || undefined
 
-export const connection = {
+// Shared ioredis instance — Queues reuse this directly,
+// Workers will call .duplicate() internally for their blocking client.
+export const connection = new IORedis({
     username: redisUsername,
     password: redisPassword,
     host: redisHost,
     port: redisPort,
+    maxRetriesPerRequest: null,   // required by BullMQ
     retryStrategy: (times: number) => {
         if (times > 10) {
             console.error('Redis max reconnection attempts reached')
@@ -19,12 +23,10 @@ export const connection = {
         }
         return Math.min(times * 100, 30000)
     }
-}
+})
 
 console.log('Redis config:', {
     host: redisHost,
     port: redisPort,
     hasPassword: !!redisPassword
 })
-
-

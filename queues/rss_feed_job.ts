@@ -21,6 +21,13 @@ const RssWorker = new Worker ('news',async job=>{
 
 },{connection})
 
+export async function closeRssFeedResources() {
+    await Promise.all([
+        RssWorker.close(),
+        RssQueue.close(),
+    ])
+}
+
 
 
 export async function pullRssFeed(){

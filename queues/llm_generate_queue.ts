@@ -3,7 +3,7 @@ import { connection } from '../connections/reddis_connection'
 import { client } from '../connections/db_connection'
 import { Rss_Clean_Table } from '../Types/Api_Types'
 import { AIMessage, createAgent, tool } from "langchain";
-import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
+
 
 
 
@@ -68,9 +68,7 @@ const LlmWorker = new Worker ('Llm',async job=>{
 
 
            if(insert.rowCount!==0){
-            console.log(`Inserted \n
-                ${data.title}
-                into db`)
+            console.log(`Inserted News Article [${data.title.toUpperCase()}]into db \n`)
         }
 
            return {
@@ -95,6 +93,13 @@ const LlmWorker = new Worker ('Llm',async job=>{
     },
     
 })
+
+    export async function closeLlmResources() {
+        await Promise.all([
+            LlmWorker.close(),
+            LlmQueue.close(),
+        ])
+    }
 
 
 export async function startLlmSummarization(data:Rss_Clean_Table[]){

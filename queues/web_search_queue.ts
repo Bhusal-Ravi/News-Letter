@@ -1,8 +1,8 @@
 import { Queue, Worker } from 'bullmq'
 import { connection } from '../connections/reddis_connection'
 import { client } from '../connections/db_connection'
-import { insertIntoCleanTable } from '../sql/insert_into_clean_table'
-import { Rss_Clean_Table, Rss_Clean_Table_Embedding } from '../Types/Api_Types'
+
+import { Rss_Clean_Table } from '../Types/Api_Types'
 import { tvly } from '../connections/tavily_connection'
 
 
@@ -14,7 +14,7 @@ const WebSearchWorker = new Worker ('websearch',async job=>{
     try{
 
         const   data:Rss_Clean_Table= job.data
-    const response= await tvly.search(data.title.concat(",",data.content),{
+    const response= await tvly.search(data.title.concat(","),{
     searchDepth: "basic",
     maxResults: 3,
     includeImages: true,
@@ -61,6 +61,13 @@ const WebSearchWorker = new Worker ('websearch',async job=>{
     },
     
 })
+
+    export async function closeWebSearchResources() {
+        await Promise.all([
+            WebSearchWorker.close(),
+            WebSearchQueue.close(),
+        ])
+    }
 
 WebSearchWorker.on('completed', async(job,data)=>{
         console.log('RowCount',data.rowCount,'\n')

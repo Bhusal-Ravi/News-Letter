@@ -7,9 +7,12 @@ import './connections/vogaye_connection'
 import './connections/reddis_connection'
 import './connections/tavily_connection'
 import { Queue, Worker } from 'bullmq'
-import { connection } from './connections/reddis_connection'; 
-import { handleRssFeed } from './services/rssFeed';
+import { connection } from './connections/reddis_connection';
 import { pullRssFeed } from './queues/rss_feed_job';
+import { closeRssFeedResources } from './queues/rss_feed_job';
+import { closeWebSearchResources } from './queues/web_search_queue';
+import { closeLlmResources } from './queues/llm_generate_queue';
+import { closeEmbeddingResources } from './queues/embedding_queue';
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -30,26 +33,67 @@ app.get('/', async (req, res) => {
 	res.json('Server Healthy');
 });
 
-const JobRepeatQueue= new Queue('repeat',{connection})
-const JobRepeatWorker= new Worker('repeat', async job=>{
+const JobRepeatQueue = new Queue('repeat', { connection })
+const JobRepeatWorker = new Worker('repeat', async job => {
 	console.log(`[SCHEDULER] ${FLOW_BAR}`)
 	console.log('[SCHEDULER] Initiated next pull phase of news')
 	pullRssFeed()
-}, {connection})
+}, { connection })
 
-async function scheduleOperation(){
+let isShuttingDown = false
 
-const start= await JobRepeatQueue.upsertJobScheduler(
-  'my-scheduler-id',
-  { pattern: '*/30 * * * *' },
-  {
-    opts: {
-      backoff: 3,
-      attempts: 5,
-      removeOnFail: 200,
-    },
-  },
-);
+async function closeRepeatResources() {
+	await Promise.all([
+		JobRepeatWorker.close(),
+		JobRepeatQueue.close(),
+	])
+}
+
+async function shutdown(signal: string) {
+	if (isShuttingDown) {
+		return
+	}
+	isShuttingDown = true
+
+	console.log(`[SERVER] Received ${signal}, closing Redis resources...`)
+
+	try {
+		await Promise.all([
+			closeRepeatResources(),
+			closeRssFeedResources(),
+			closeWebSearchResources(),
+			closeLlmResources(),
+			closeEmbeddingResources(),
+		])
+		console.log('[SERVER] Redis resources closed')
+	} catch (error) {
+		console.error('[SERVER] Error while closing Redis resources', error)
+	} finally {
+		process.exit(0)
+	}
+}
+
+process.once('SIGINT', () => {
+	void shutdown('SIGINT')
+})
+
+process.once('SIGTERM', () => {
+	void shutdown('SIGTERM')
+})
+
+async function scheduleOperation() {
+
+	const start = await JobRepeatQueue.upsertJobScheduler(
+		'my-scheduler-id',
+		{ pattern: '*/30 * * * *' },
+		{
+			opts: {
+				backoff: 3,
+				attempts: 5,
+				removeOnFail: 200,
+			},
+		},
+	);
 }
 
 scheduleOperation()

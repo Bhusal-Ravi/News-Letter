@@ -51,4 +51,11 @@ const EmbeddingWorker = new Worker ('embedding',async job=>{
  
 })
 
+    export async function closeEmbeddingResources() {
+      await Promise.all([
+        EmbeddingWorker.close(),
+        EmbeddingQueue.close(),
+      ])
+    }
+
 
