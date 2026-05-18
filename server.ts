@@ -13,6 +13,7 @@ import { closeRssFeedResources } from './queues/rss_feed_job';
 import { closeWebSearchResources } from './queues/web_search_queue';
 import { closeLlmResources } from './queues/llm_generate_queue';
 import { closeEmbeddingResources } from './queues/embedding_queue';
+import { startNewsFinding } from './scripts/findTodaysNews';
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -35,9 +36,26 @@ app.get('/', async (req, res) => {
 
 const JobRepeatQueue = new Queue('repeat', { connection })
 const JobRepeatWorker = new Worker('repeat', async job => {
-	console.log(`[SCHEDULER] ${FLOW_BAR}`)
-	console.log('[SCHEDULER] Initiated next pull phase of news')
-	pullRssFeed()
+
+	const jobId = job.name
+
+	if (jobId === 'start') {
+		console.log(`[SCHEDULER] ${FLOW_BAR}`)
+		console.log('[SCHEDULER] Initiated next pull phase of news')
+		await pullRssFeed()
+	}
+
+	if (jobId === 'startnewsgeneration') {
+		console.log("[SCHEDULER] Starting the finding todays news job")
+		await startNewsFinding()
+	}
+
+	if (jobId === 'startemailqueue') {
+
+	}
+
+
+
 }, { connection })
 
 let isShuttingDown = false
@@ -84,7 +102,7 @@ process.once('SIGTERM', () => {
 async function scheduleOperation() {
 
 	const start = await JobRepeatQueue.upsertJobScheduler(
-		'my-scheduler-id',
+		'start',
 		{ pattern: '*/30 * * * *' },
 		{
 			opts: {
@@ -94,6 +112,37 @@ async function scheduleOperation() {
 			},
 		},
 	);
+
+	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
+		'startnewsgeneration',
+		{
+			pattern: '0 44 16 * * *',
+			tz: 'Asia/Kathmandu'
+		},
+		{
+			opts: {
+				backoff: 3,
+				attempts: 5,
+				removeOnFail: 200,
+			},
+		},
+	);
+
+	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
+		'startemailqueue',
+		{
+			pattern: '*/30 * * * *',
+			tz: 'Asia/Kathmandu'
+		},
+		{
+			opts: {
+				backoff: 3,
+				attempts: 5,
+				removeOnFail: 200,
+			},
+		},
+	);
+
 }
 
 scheduleOperation()

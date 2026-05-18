@@ -12,26 +12,26 @@ dotenv.config();
 async function createTags() {
     let db
     try {
-        
-         db=await db_client.connect()
-        const text= NEWSLETTER_TAGS.map((item)=>{
-             return item.tags
+
+        db = await db_client.connect()
+        const text = NEWSLETTER_TAGS.map((item) => {
+            return item.tags
         })
 
-        const embeddings= await client.embed({
-             input:text,
-             model:'voyage-4-lite',
+        const embeddings = await client.embed({
+            input: text,
+            model: 'voyage-4-lite',
         })
 
-        const tagsWithEmbeddings: Tags[] = NEWSLETTER_TAGS.map((item,index)=>({
+        const tagsWithEmbeddings: Tags[] = NEWSLETTER_TAGS.map((item, index) => ({
             ...item,
-            embedding:embeddings?.data?.[index].embedding
+            embedding: embeddings?.data?.[index].embedding
 
         }))
 
 
 
-       await  insertIntoTags(tagsWithEmbeddings)
+        await insertIntoTags(tagsWithEmbeddings)
 
     } catch (error) {
         console.log(error)

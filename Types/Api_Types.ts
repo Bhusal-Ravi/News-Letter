@@ -32,6 +32,18 @@ export interface Rss_Clean_Table {
     category:string
 }
 
+
+export interface Temp_Rank_Table {
+    title:string,
+    source:string,
+    content:string,
+    raw_content:string,
+    published_date:string,
+    guid:string,
+    category:string,
+    image_url:string
+}
+
 export interface Rss_Clean_Table_Embedding {
     title:string,
     source:string,
