@@ -14,6 +14,7 @@ import { closeWebSearchResources } from './queues/web_search_queue';
 import { closeLlmResources } from './queues/llm_generate_queue';
 import { closeEmbeddingResources } from './queues/embedding_queue';
 import { startNewsFinding } from './scripts/findTodaysNews';
+import { sendEmail } from './services/sendEmail';
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -51,7 +52,7 @@ const JobRepeatWorker = new Worker('repeat', async job => {
 	}
 
 	if (jobId === 'startemailqueue') {
-
+		await sendEmail()
 	}
 
 
@@ -116,7 +117,7 @@ async function scheduleOperation() {
 	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 44 16 * * *',
+			pattern: '0 52 14 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
@@ -131,7 +132,7 @@ async function scheduleOperation() {
 	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
-			pattern: '*/30 * * * *',
+			pattern: '0 41 21 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{

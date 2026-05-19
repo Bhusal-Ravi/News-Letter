@@ -61,3 +61,23 @@ export interface Tags {
     articles_per_tag:number,
 
 }
+
+
+export interface Final_Rank_Table {
+    guid:string,
+    title:string,
+    content:string,
+    source:string,
+    category:string,
+    published_date:string,
+    image_url:string
+}
+
+
+export interface Email_Type {
+    id:string,
+    email:string,
+    subscribed:boolean,
+    created_at:string,
+    updated_at:string
+}
