@@ -1,264 +1,220 @@
-
 import { Final_Rank_Table } from "../Types/Api_Types";
 
 export function htmlMaker(
   techNews: Final_Rank_Table[],
   worldNews: Final_Rank_Table[],
-  email: string
+  email: string,
+  unsubscribeLink: string
 ) {
-
-  const allNews = [...worldNews, ...techNews];
-
-  const formatDate = (date: string) => {
-    return new Date(date).toLocaleDateString("en-US", {
+  const formatDate = (date: string) =>
+    new Date(date).toLocaleDateString("en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
     });
-  };
 
-  const truncate = (text: string, limit: number = 420) => {
-    if (!text) return "";
+  const truncate = (text: string) => text || "";
 
-    if (text.length <= limit) return text;
-
-    return text.slice(0, limit).trim() + "...";
-  };
-
-  const renderStory = (story: Final_Rank_Table) => {
-
-    return `
-
-    <table
-      width="100%"
-      cellpadding="0"
-      cellspacing="0"
-      style="
-        background:#ffffff;
-        border:1px solid #d1d5db;
-        margin-bottom:24px;
-      "
-    >
-
+  const renderStory = (story: Final_Rank_Table) => `
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#ffffff;border-bottom:1px solid #e5e7eb;">
       ${
         story.image_url
           ? `
-        <tr>
-          <td>
-            <img
-              src="${story.image_url}"
-              alt="${story.title}"
-              width="680"
-              height="320"
-              style="
-                width:100%;
-                height:320px;
-                object-fit:cover;
-                display:block;
-              "
-            />
-          </td>
-        </tr>
-      `
+      <tr>
+        <td>
+          <img src="${story.image_url}" alt="${story.title}"
+            width="680" height="240"
+            style="width:100%;height:240px;object-fit:cover;display:block;" />
+        </td>
+      </tr>`
           : ""
       }
-
       <tr>
-        <td style="padding:28px;">
-
-          <div style="
-            font-size:11px;
-            font-weight:700;
-            letter-spacing:0.08em;
-            text-transform:uppercase;
-            color:#6b7280;
-            margin-bottom:14px;
-            font-family:Arial,sans-serif;
-          ">
-            ${story.category}
-          </div>
-
+        <td style="padding:28px 36px;">
           <h2 style="
-            margin:0 0 16px;
-            font-size:30px;
-            line-height:1.35;
+            margin:0 0 14px;
+            font-size:24px;
+            line-height:1.3;
             color:#111827;
-            font-weight:800;
-            font-family:Arial,sans-serif;
+            font-weight:700;
+            font-family:Georgia,'Times New Roman',serif;
           ">
             ${story.title}
           </h2>
-
           <p style="
-            margin:0 0 22px;
-            font-size:16px;
-            line-height:1.8;
+            margin:0 0 20px;
+            font-size:15px;
+            line-height:1.85;
             color:#374151;
             font-family:Arial,sans-serif;
           ">
             ${truncate(story.content)}
           </p>
-
-          <table
-            width="100%"
-            cellpadding="0"
-            cellspacing="0"
-          >
+          <table width="100%" cellpadding="0" cellspacing="0">
             <tr>
-
               <td style="
-                font-size:13px;
+                font-size:11px;
                 color:#6b7280;
+                letter-spacing:0.06em;
+                text-transform:uppercase;
                 font-family:Arial,sans-serif;
               ">
-                ${story.source} · ${formatDate(story.published_date)}
+                ${formatDate(story.published_date)}
               </td>
-
+              ${
+                story.redirect_url
+                  ? `
               <td align="right">
-
-                ${
-                  story.source
-                    ? `
-                  <a
-                    href="${story.source}"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style="
-                      font-size:13px;
-                      font-weight:700;
-                      color:#111827;
-                      text-decoration:none;
-                      font-family:Arial,sans-serif;
-                    "
-                  >
-                    Read More →
-                  </a>
-                `
-                    : ""
-                }
-
-              </td>
-
+                <a href="${story.redirect_url}" target="_blank" rel="noopener noreferrer"
+                  style="
+                    font-size:11px;
+                    font-weight:700;
+                    color:#111827;
+                    text-decoration:none;
+                    letter-spacing:0.08em;
+                    text-transform:uppercase;
+                    font-family:Arial,sans-serif;
+                  ">
+                  Read full story &#8594;
+                </a>
+              </td>`
+                  : ""
+              }
             </tr>
           </table>
-
         </td>
       </tr>
-
     </table>
+  `;
 
-    `;
-  };
+  const sectionHeader = (label: string, iconHex: string) => `
+    <tr>
+      <td style="background:#ffffff;padding:28px 36px 0;">
+        <table cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="
+              border-bottom:2px solid #111827;
+              padding-bottom:8px;
+            ">
+              <span style="
+                font-size:11px;
+                font-weight:700;
+                color:#111827;
+                letter-spacing:0.18em;
+                text-transform:uppercase;
+                font-family:Arial,sans-serif;
+              ">
+                ${iconHex}&nbsp;&nbsp;${label}
+              </span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  `;
 
   return `
 <!DOCTYPE html>
 <html>
-
 <head>
-
-<meta charset="UTF-8" />
-
-<meta
-  name="viewport"
-  content="width=device-width, initial-scale=1.0"
-/>
-
-<title>Today's Breaking News</title>
-
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Today's Breaking News</title>
 </head>
+<body style="margin:0;padding:32px 16px;background:#ffffff;">
 
-<body style="
-  margin:0;
-  padding:40px 18px;
-  background:#eceff1;
-">
-
-  <table
-    width="100%"
-    cellpadding="0"
-    cellspacing="0"
-    style="
-      max-width:720px;
-      margin:0 auto;
-      font-family:Arial,sans-serif;
-    "
-  >
+  <table width="100%" cellpadding="0" cellspacing="0"
+    style="max-width:680px;margin:0 auto;font-family:Arial,sans-serif;">
 
     <!-- HEADER -->
-
     <tr>
-      <td style="
-        padding-bottom:30px;
-      ">
-
+      <td style="background:#ffffff;padding:40px 36px 32px;border-bottom:1px solid #e5e7eb;">
         <div style="
-          font-size:46px;
-          font-weight:900;
-          line-height:1.05;
-          color:#111827;
-          letter-spacing:-0.03em;
-          margin-bottom:10px;
-        ">
-          TODAY'S BREAKING NEWS
-        </div>
-
-        <div style="
-          font-size:13px;
+          font-size:10px;
           color:#6b7280;
+          letter-spacing:0.2em;
           text-transform:uppercase;
-          letter-spacing:0.08em;
+          font-family:Arial,sans-serif;
+          margin-bottom:14px;
+        ">
+          Your daily briefing
+        </div>
+        <div style="
+          font-size:44px;
+          font-weight:900;
+          color:#111827;
+          line-height:1.0;
+          letter-spacing:-0.02em;
+          font-family:Georgia,'Times New Roman',serif;
+        ">
+          Today's <span style="color:#111827;">Breaking</span> News
+        </div>
+        <div style="
+          font-size:11px;
+          color:#6b7280;
+          margin-top:14px;
+          letter-spacing:0.12em;
+          text-transform:uppercase;
           font-family:Arial,sans-serif;
         ">
           ${new Date().toDateString()}
         </div>
-
       </td>
     </tr>
 
-    <!-- NEWS -->
-
+    <!-- GOLD RULE -->
     <tr>
-      <td>
+      <td style="height:1px;background:#e5e7eb;"></td>
+    </tr>
 
-        ${allNews.map(renderStory).join("")}
+    <!-- WORLD NEWS -->
+    ${sectionHeader("World News", "&#127758;")}
+    <tr>
+      <td>${worldNews.map(renderStory).join("")}</td>
+    </tr>
 
-      </td>
+    <!-- SECTION GAP -->
+    <tr>
+      <td style="height:2px;background:#f3f4f6;"></td>
+    </tr>
+
+    <!-- TECH NEWS -->
+    ${sectionHeader("Tech &amp; Science", "&#128187;")}
+    <tr>
+      <td>${techNews.map(renderStory).join("")}</td>
     </tr>
 
     <!-- FOOTER -->
-
     <tr>
       <td style="
-        padding-top:18px;
-        border-top:1px solid #d1d5db;
+        background:#ffffff;
+        padding:28px 36px;
+        border-top:1px solid #e5e7eb;
+        text-align:center;
       ">
-
-        <div style="
-          font-size:12px;
-          line-height:1.9;
+        <p style="
+          font-size:11px;
           color:#6b7280;
-          text-align:center;
+          line-height:2;
+          margin:0;
           font-family:Arial,sans-serif;
         ">
-
-          You are receiving this email because
-          <strong>${email}</strong>
-          is subscribed to this newspaper.
-
-          <br/><br/>
-
-          © ${new Date().getFullYear()} Today's Breaking News
-
-        </div>
-
+          You are receiving this because
+          <span style="color:#111827;">${email}</span>
+          is subscribed to this newsletter.<br/><br/>
+          <a href="${unsubscribeLink}"
+            style="color:#111827;text-decoration:none;font-weight:700;">
+            Unsubscribe
+          </a>
+          &nbsp;&nbsp;&middot;&nbsp;&nbsp;
+          &copy; ${new Date().getFullYear()} Today's Breaking News
+        </p>
       </td>
     </tr>
 
   </table>
-
 </body>
-
 </html>
   `;
 }
-

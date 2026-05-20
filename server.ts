@@ -15,6 +15,10 @@ import { closeLlmResources } from './queues/llm_generate_queue';
 import { closeEmbeddingResources } from './queues/embedding_queue';
 import { startNewsFinding } from './scripts/findTodaysNews';
 import { sendEmail } from './services/sendEmail';
+import subscriptionRouter from './routes/subscription';
+import postSubscriptionRouter from './routes/subscription_post'
+import redirectRouter from './routes/redirect'
+import { createRedirectLinksTable } from './sql/create_redirect_links_table'
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -30,6 +34,10 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }))
+app.use('/api', subscriptionRouter);
+app.use(postSubscriptionRouter);
+app.use(redirectRouter);
 
 app.get('/', async (req, res) => {
 	res.json('Server Healthy');
@@ -117,7 +125,7 @@ async function scheduleOperation() {
 	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 52 14 * * *',
+			pattern: '0 39 16 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
@@ -132,7 +140,7 @@ async function scheduleOperation() {
 	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
-			pattern: '0 41 21 * * *',
+			pattern: '0 45 16 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
@@ -145,6 +153,8 @@ async function scheduleOperation() {
 	);
 
 }
+
+void createRedirectLinksTable()
 
 scheduleOperation()
 

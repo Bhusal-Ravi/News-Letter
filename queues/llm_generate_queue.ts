@@ -56,7 +56,8 @@ const LlmWorker = new Worker('Llm', async job => {
                           source = excluded.source,
                           category = excluded.category,
                           published_date = excluded.published_date,
-                          image_url = excluded.image_url`
+                                                    image_url = excluded.image_url,
+                                                    created_at = now()`
 
         const insert = await db.query(query, [
             data.guid,

@@ -70,7 +70,8 @@ export interface Final_Rank_Table {
     source:string,
     category:string,
     published_date:string,
-    image_url:string
+    image_url:string,
+    redirect_url?:string
 }
 
 

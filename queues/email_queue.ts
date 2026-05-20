@@ -5,6 +5,8 @@ import { client } from '../connections/db_connection'
 import { Email_Type, Final_Rank_Table } from '../Types/Api_Types'
 import { htmlMaker } from '../services/htmlMaker'
 import { resend } from '../connections/resend_gmail_connection'
+import { createUnsubscribeLink } from '../utils/unsubscribeToken'
+import { createRedirectLink } from '../utils/articleRedirect'
 
 
 
@@ -13,32 +15,56 @@ const emailWorker= new Worker('email',async job=>{
         const email=job.name
        
         const data:Final_Rank_Table[]= job.data
+
+        const newsWithRedirectLinks = await Promise.all(
+            data.map(async item => {
+                try {
+                    const redirectUrl = await createRedirectLink(item.source)
+
+                    return {
+                        ...item,
+                        redirect_url: redirectUrl,
+                    }
+                } catch (error) {
+                    console.log('[EMAIL/WORKER] Failed to create redirect link', error)
+                    return item
+                }
+            })
+        )
       
 
-        const techNews= data.filter(item=>item.category==='technews')
+        const techNews= newsWithRedirectLinks.filter(item=>item.category==='technews')
 
-        const worldNews= data.filter(item=>item.category==='worldnews')
+        const worldNews= newsWithRedirectLinks.filter(item=>item.category==='worldnews')
 
-       const html= htmlMaker(worldNews,techNews,email)
+        const unsubscribeUrl = createUnsubscribeLink(email)
+
+        const html= htmlMaker(techNews,worldNews,email,unsubscribeUrl)
        
         try{
              const { data, error }= await resend.emails.send({
-            from:'newsletter@bhusalravi.com.np',
+            from:'Daily News <newsletter@bhusalravi.com.np>',
             to:email.trim(),
             subject:"Today's Breaking News",
-            html: html
+            html: html,
+
+            headers:{
+                "List-Unsubscribe": `<${unsubscribeUrl}>`,
+                "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+            }
         })
 
         if (error) {
             console.error("EMAIL FAILED") 
             console.error(error) 
-            return
+            throw new Error(`Resend failed: ${error.message}`)
         }
 
         }catch(error){
             
             console.error("WORKER ERROR") 
             console.error(error)
+            throw error 
         }
        
 
@@ -84,6 +110,11 @@ export async function startSendEmail(data:Final_Rank_Table[]){
                             },
             })
         }
+
+        const guid= data.map((items=>items.guid))
+        
+        const update= await db.query(`update final_rank_table
+                                      set sent=true where guid= Any($1::text[])`,[guid])
 
     }catch(error){
         console.log(error)

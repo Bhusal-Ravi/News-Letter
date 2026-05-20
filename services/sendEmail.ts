@@ -9,7 +9,7 @@ dotenv.config()
 export async function sendEmail(){
     let db= await client.connect()
     try{
-        const get= await db.query(`select * from final_rank_table where created_at::date= now()::date `)
+        const get= await db.query(`select * from final_rank_table where created_at::date= now()::date and sent=false `)
         if(get.rowCount===0){
              throw new Error("No news available in the final_rank_table")
         }
