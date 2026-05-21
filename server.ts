@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express';
 import cors from 'cors';
-import './connections/db_connection'
+import { client } from './connections/db_connection'
 import './connections/vogaye_connection'
 import './connections/reddis_connection'
 import './connections/tavily_connection'
@@ -18,6 +18,7 @@ import { sendEmail } from './services/sendEmail';
 import subscriptionRouter from './routes/subscription';
 import postSubscriptionRouter from './routes/subscription_post'
 import redirectRouter from './routes/redirect'
+import healthRouter from './routes/health'
 import { createRedirectLinksTable } from './sql/create_redirect_links_table'
 
 const FLOW_BAR = '----------------------------------------'
@@ -38,10 +39,12 @@ app.use(express.urlencoded({ extended: true }))
 app.use('/api', subscriptionRouter);
 app.use(postSubscriptionRouter);
 app.use(redirectRouter);
+app.use(healthRouter);
 
 app.get('/', async (req, res) => {
 	res.json('Server Healthy');
 });
+
 
 const JobRepeatQueue = new Queue('repeat', { connection })
 const JobRepeatWorker = new Worker('repeat', async job => {
@@ -125,7 +128,7 @@ async function scheduleOperation() {
 	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 0 5 * * *',
+			pattern: '0 30 9 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
@@ -140,7 +143,7 @@ async function scheduleOperation() {
 	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
-			pattern: '0 0 6 * * *',
+			pattern: '0 35 9 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
