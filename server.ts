@@ -128,7 +128,7 @@ async function scheduleOperation() {
 	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 30 9 * * *',
+			pattern: '0 30 5 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
@@ -143,7 +143,7 @@ async function scheduleOperation() {
 	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
-			pattern: '0 35 9 * * *',
+			pattern: '0 0 6 * * *',
 			tz: 'Asia/Kathmandu'
 		},
 		{
