@@ -2,7 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express';
 import cors from 'cors';
-import { client } from './connections/db_connection'
+
 import './connections/vogaye_connection'
 import './connections/reddis_connection'
 import './connections/tavily_connection'
@@ -113,10 +113,10 @@ process.once('SIGTERM', () => {
 
 async function scheduleOperation() {
 
-	const start = await JobRepeatQueue.upsertJobScheduler(
+	 await JobRepeatQueue.upsertJobScheduler(
 		'start',
 		{ pattern: '*/30 * * * *' },
-		{
+		{	name: 'start',
 			opts: {
 				backoff: 3,
 				attempts: 5,
@@ -125,13 +125,13 @@ async function scheduleOperation() {
 		},
 	);
 
-	const startNewsGeneration = await JobRepeatQueue.upsertJobScheduler(
+	 await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 30 5 * * *',
+			pattern: '0 45 5 * * *',
 			tz: 'Asia/Kathmandu'
 		},
-		{
+		{	name: 'startnewsgeneration',
 			opts: {
 				backoff: 3,
 				attempts: 5,
@@ -140,13 +140,13 @@ async function scheduleOperation() {
 		},
 	);
 
-	const startEmailQueue = await JobRepeatQueue.upsertJobScheduler(
+	 await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
 			pattern: '0 0 6 * * *',
 			tz: 'Asia/Kathmandu'
 		},
-		{
+		{	name: 'startemailqueue',
 			opts: {
 				backoff: 3,
 				attempts: 5,
@@ -159,9 +159,11 @@ async function scheduleOperation() {
 
 void createRedirectLinksTable()
 
-scheduleOperation()
+async function bootstrap() {
+    await scheduleOperation()
+    app.listen(3000, () => {
+        console.log('[SERVER] Server started on port 3000');
+    });
+}
 
-
-app.listen(3000, () => {
-	console.log('[SERVER] Server started on port 3000');
-});
+void bootstrap()
