@@ -22,7 +22,7 @@ export async function startNewsFinding() {
   let db = await client.connect()
 
   try {
-    await client.query(`BEGIN`)
+    await db.query(`BEGIN`)
     const PreparedStatement = []
     const values = []
     for (let i = 0; i < data.length; i++) {

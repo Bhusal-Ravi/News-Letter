@@ -18,7 +18,7 @@ export async function sendEmail(){
 
     }catch(error){
         console.log(error)
-        throw Error
+        throw error
     }finally{
         db.release()
     }
