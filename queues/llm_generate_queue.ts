@@ -8,7 +8,7 @@ import { AIMessage, createAgent, tool } from "langchain";
 
 
 export const agent = createAgent({
-    model: "google-genai:gemini-3.1-flash-lite-preview",
+    model: "google-genai:gemini-3.1-flash-lite",
     systemPrompt: `You are a professional newsletter content summarizer.
                                     Your job is to convert raw news article content into concise, accurate summaries for email newsletters. The input may contain noisy scraped text, repeated paragraphs, ads, navigation text, irrelevant links, or formatting issues. Identify the core news event and summarize only the important information for readers.
 
