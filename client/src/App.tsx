@@ -14,7 +14,7 @@ function App() {
 		setMessage('')
 
 		try {
-			const response = await fetch('/api/subscribe', {
+			const response = await fetch('https://links.bhusalravi.com.np/api/subscribe', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({ email }),
