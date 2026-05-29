@@ -19,6 +19,7 @@ import subscriptionRouter from './routes/subscription';
 import postSubscriptionRouter from './routes/subscription_post'
 import redirectRouter from './routes/redirect'
 import healthRouter from './routes/health'
+import usersNumberRouter from './routes/users_number'
 import { createRedirectLinksTable } from './sql/create_redirect_links_table'
 
 const FLOW_BAR = '----------------------------------------'
@@ -40,6 +41,7 @@ app.use('/api', subscriptionRouter);
 app.use(postSubscriptionRouter);
 app.use(redirectRouter);
 app.use(healthRouter);
+app.use(usersNumberRouter);
 
 app.get('/', async (req, res) => {
 	res.json('Server Healthy');
