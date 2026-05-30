@@ -80,6 +80,14 @@ emailWorker.on('completed',async (job)=>{
     logger.info(`Email sent to ${job.name} successfully`)
 })
 
+emailWorker.on('failed',async  (job, err) => {
+    logger.error({ err }, `Email failed for ${job?.name}`)
+})
+
+emailWorker.on('stalled',async (jobId) => {
+    logger.warn(`Job ${jobId} stalled`)
+})
+
 
 
 
@@ -101,12 +109,12 @@ export async function startSendEmail(data:Final_Rank_Table[]){
         
         for(let item of emails)
         {
-            emailQueue.add(`${item.email}`,data, {
+          await   emailQueue.add(`${item.email}`,data, {
                             attempts: 5,
                             backoff: {
                             type: 'exponential',
                             delay: 3000,
-                            jitter: 0.5,
+                            
                             },
             })
         }

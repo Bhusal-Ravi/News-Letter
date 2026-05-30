@@ -1,4 +1,3 @@
-
 import { Final_Rank_Table } from "../Types/Api_Types";
 
 export function htmlMaker(
@@ -38,6 +37,7 @@ export function htmlMaker(
             src="${story.image_url}"
             alt="${story.title}"
             width="680"
+            class="story-img"
             style="
               width:100%;
               height:260px;
@@ -51,8 +51,9 @@ export function htmlMaker(
       }
 
       <tr>
-        <td style="padding:34px 36px;">
+        <td class="story-cell" style="padding:34px 36px;">
           <div
+            class="story-date"
             style="
               font-size:11px;
               letter-spacing:0.16em;
@@ -67,10 +68,11 @@ export function htmlMaker(
           </div>
 
           <h2
+            class="story-title"
             style="
               margin:0 0 18px;
-              font-size:34px;
-              line-height:1.15;
+              font-size:28px;
+              line-height:1.2;
               color:#111827;
               font-weight:700;
               letter-spacing:-0.03em;
@@ -81,6 +83,7 @@ export function htmlMaker(
           </h2>
 
           <p
+            class="story-body"
             style="
               margin:0;
               font-size:16px;
@@ -160,8 +163,46 @@ export function htmlMaker(
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>Morning Brief</title>
+  <style>
+    @media only screen and (max-width: 600px) {
+      .hero-title {
+        font-size: 34px !important;
+        line-height: 1.1 !important;
+        letter-spacing: -0.03em !important;
+      }
+      .hero-sub {
+        font-size: 15px !important;
+        line-height: 1.7 !important;
+        margin-top: 16px !important;
+      }
+      .hero-td {
+        padding: 12px 8px 32px !important;
+      }
+      .story-img {
+        height: 180px !important;
+      }
+      .story-cell {
+        padding: 20px 18px !important;
+      }
+      .story-date {
+        font-size: 10px !important;
+        margin-bottom: 10px !important;
+      }
+      .story-title {
+        font-size: 20px !important;
+        line-height: 1.25 !important;
+        margin-bottom: 12px !important;
+      }
+      .story-body {
+        font-size: 14px !important;
+        line-height: 1.75 !important;
+      }
+      .footer-cell {
+        padding: 24px 18px !important;
+      }
+    }
+  </style>
 </head>
 
 <body
@@ -202,7 +243,7 @@ export function htmlMaker(
 
           <!-- HERO -->
           <tr>
-            <td style="padding:20px 12px 56px;text-align:center;">
+            <td class="hero-td" style="padding:20px 12px 56px;text-align:center;">
 
               <!-- Badge -->
               <div
@@ -225,6 +266,7 @@ export function htmlMaker(
 
               <!-- Title -->
               <div
+                class="hero-title"
                 style="
                   font-size:62px;
                   line-height:1.02;
@@ -240,6 +282,7 @@ export function htmlMaker(
 
               <!-- Subtitle -->
               <div
+                class="hero-sub"
                 style="
                   max-width:560px;
                   margin:28px auto 0;
@@ -309,6 +352,7 @@ export function htmlMaker(
               >
                 <tr>
                   <td
+                    class="footer-cell"
                     style="
                       padding:34px 36px;
                       text-align:center;
@@ -391,4 +435,3 @@ export function htmlMaker(
 </html>
   `;
 }
-
