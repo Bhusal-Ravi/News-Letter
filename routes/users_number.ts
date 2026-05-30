@@ -7,7 +7,7 @@ const router = express.Router()
 router.get('/api/usersnumber', async (_req, res) => {
 	try {
 		const result = await client.query(
-			`select count(distinct email)::int as count from users`
+			`select count(distinct email)::int as count from users where subscribed=true`
 		)
 
 		const count = result.rows[0]?.count ?? 0
