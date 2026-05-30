@@ -1,4 +1,5 @@
 import { client } from '../connections/db_connection'
+import { logger } from '../utils/logger'
 
 export async function createRedirectLinksTable() {
     try {
@@ -12,6 +13,6 @@ export async function createRedirectLinksTable() {
             )`
         )
     } catch (error) {
-        console.log('[DB] Failed to create redirect_links table', error)
+        logger.error({ error }, '[DB] Failed to create redirect_links table')
     }
 }

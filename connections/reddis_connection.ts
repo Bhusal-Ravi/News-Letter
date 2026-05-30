@@ -1,5 +1,6 @@
 import dotenv from 'dotenv'
 import IORedis from 'ioredis'
+import { logger } from '../utils/logger'
 
 dotenv.config()
 
@@ -18,14 +19,15 @@ export const connection = new IORedis({
     maxRetriesPerRequest: null,   // required by BullMQ
     retryStrategy: (times: number) => {
         if (times > 10) {
-            console.error('Redis max reconnection attempts reached')
+            logger.error('Redis max reconnection attempts reached')
             return null
         }
         return Math.min(times * 100, 30000)
     }
 })
 
-console.log('Redis config:', {
+logger.info('Redis config:')
+logger.info({
     host: redisHost,
     port: redisPort,
     hasPassword: !!redisPassword

@@ -1,5 +1,6 @@
 import { client } from "../connections/db_connection";
 import { Rss_Clean_Table, Rss_Clean_Table_Embedding } from "../Types/Api_Types";
+import { logger } from "../utils/logger";
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -11,7 +12,7 @@ export async function insertIntoCleanTable(data: Rss_Clean_Table_Embedding[]) {
 
     const validData = data.filter((item) => Array.isArray(item.embedding) && item.embedding.length > 0)
     if (validData.length === 0) {
-        console.log('[DB/INSERT] No rows with valid embeddings to insert into db')
+        logger.warn('[DB/INSERT] No rows with valid embeddings to insert into db')
         return
     }
 
@@ -38,18 +39,18 @@ export async function insertIntoCleanTable(data: Rss_Clean_Table_Embedding[]) {
 
 
     try {
-        console.log(`[DB/INSERT] ${FLOW_BAR}`)
-        console.log('[DB/INSERT] Starting clean_articles insert for rows:', validData.length)
-        console.log('[DB/INSERT] Article titles being inserted:', validData.map(item => item.title))
+        logger.info(`[DB/INSERT] ${FLOW_BAR}`)
+        logger.info({ rows: validData.length }, '[DB/INSERT] Starting clean_articles insert for rows')
+        logger.info({ titles: validData.map(item => item.title) }, '[DB/INSERT] Article titles being inserted')
         db = await client.connect()
         await db.query('BEGIN')
 
         const insert = await db.query(query, values)
 
         if (insert.rowCount === 0) {
-            console.log('[DB/INSERT] Nothing to insert into db after conflict checks')
+            logger.warn('[DB/INSERT] Nothing to insert into db after conflict checks')
         } else {
-            console.log(`[DB/INSERT] Inserted ${insert.rowCount} new News into clean_articles table`)
+            logger.info(`[DB/INSERT] Inserted ${insert.rowCount} new News into clean_articles table`)
         }
         const deletion = await db.query(`delete from clean_articles a
                                         using clean_articles b
@@ -60,10 +61,10 @@ export async function insertIntoCleanTable(data: Rss_Clean_Table_Embedding[]) {
                                         returning a.title as deleted, b.title as defendent`)
 
         if (deletion.rowCount === 0) {
-            console.log('[DB/CLEANUP] No articles were found to have cosine similarity >= 0.80')
+            logger.info('[DB/CLEANUP] No articles were found to have cosine similarity >= 0.80')
         } else {
-            console.log('[DB/CLEANUP] Potentially similar pairs:', deletion.rows)
-            console.log(`[DB/CLEANUP] Deleted ${deletion.rowCount} items from clean_articles that may be similar`)
+            logger.info({ rows: deletion.rows }, '[DB/CLEANUP] Potentially similar pairs')
+            logger.info(`[DB/CLEANUP] Deleted ${deletion.rowCount} items from clean_articles that may be similar`)
         }
 
         await db.query('COMMIT')
@@ -71,7 +72,7 @@ export async function insertIntoCleanTable(data: Rss_Clean_Table_Embedding[]) {
         if (db) {
             await db.query('ROLLBACK')
         }
-        console.log('[DB/INSERT][ERROR]', error)
+        logger.error({ error }, '[DB/INSERT][ERROR]')
     } finally {
         db?.release()
     }

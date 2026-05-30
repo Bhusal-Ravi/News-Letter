@@ -3,6 +3,7 @@ import { connection } from '../connections/reddis_connection'
 import { client } from '../connections/vogaye_connection'
 import { insertIntoCleanTable } from '../sql/insert_into_clean_table'
 import { Rss_Clean_Table, Rss_Clean_Table_Embedding } from '../Types/Api_Types'
+import { logger } from '../utils/logger'
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -11,9 +12,9 @@ const EmbeddingWorker = new Worker ('embedding',async job=>{
     const text= job.data.text
     const newStructuredWorldNews:Rss_Clean_Table[] = job.data.newStructuredWorldNews
   try{
-         console.log(`[EMBED/WORKER] ${FLOW_BAR}`)
-         console.log(`[EMBED/WORKER] Started embedding job: ${job.name} (id: ${job.id}) with ${text.length} items`)
-         console.log('[EMBED/WORKER] Embedding titles:', newStructuredWorldNews.map(item => item.title))
+      logger.info(`[EMBED/WORKER] ${FLOW_BAR}`)
+      logger.info(`[EMBED/WORKER] Started embedding job: ${job.name} (id: ${job.id}) with ${text.length} items`)
+      logger.info({ titles: newStructuredWorldNews.map(item => item.title) }, '[EMBED/WORKER] Embedding titles')
          if(text.length!==0) {
            var result= await client.embed({
                                input:text,
@@ -30,13 +31,13 @@ const EmbeddingWorker = new Worker ('embedding',async job=>{
    
             // Insert into Db
              await  insertIntoCleanTable(newsWithEmbeddings)
-             console.log(`[EMBED/WORKER] Embedding generation and DB insert completed for ${newsWithEmbeddings.length} articles`)
+             logger.info(`[EMBED/WORKER] Embedding generation and DB insert completed for ${newsWithEmbeddings.length} articles`)
              }else {
-               console.log('[EMBED/WORKER] Nothing to insert into db')
+               logger.warn('[EMBED/WORKER] Nothing to insert into db')
              }
 
   }catch(error){
-        console.log('[EMBED/WORKER][ERROR]', error)
+        logger.error({ error }, '[EMBED/WORKER][ERROR]')
         throw error
     }
   

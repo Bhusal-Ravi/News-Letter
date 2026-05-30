@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 import { client } from '../connections/db_connection'
 import { Final_Rank_Table } from '../Types/Api_Types'
 import { startSendEmail } from '../queues/email_queue'
+import { logger } from '../utils/logger'
 dotenv.config()
 
 
@@ -14,10 +15,10 @@ export async function sendEmail(){
              throw new Error("No news available in the final_rank_table")
         }
 
-        startSendEmail(get.rows)
+      await startSendEmail(get.rows)
 
     }catch(error){
-        console.log(error)
+        logger.error({ error })
         throw error
     }finally{
         db.release()

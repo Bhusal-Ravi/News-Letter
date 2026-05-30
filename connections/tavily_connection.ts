@@ -1,9 +1,10 @@
 import {tavily} from '@tavily/core'
 import dotenv from 'dotenv'
+import { logger } from '../utils/logger'
 dotenv.config()
 
 
 export const tvly = tavily({ apiKey: process.env.TAVILY_KEY });
 
 
-if(tvly) console.log("Tavily Connected Successfully")
+if(tvly) logger.info('Tavily Connected Successfully')

@@ -1,5 +1,6 @@
 import express from 'express'
 import { client } from '../connections/db_connection'
+import { logger } from '../utils/logger'
 
 const router = express.Router()
 
@@ -13,7 +14,7 @@ router.get('/api/usersnumber', async (_req, res) => {
 
 		return res.status(200).json({ count })
 	} catch (error) {
-		console.error('[USERS NUMBER]', error)
+		logger.error({ error }, '[USERS NUMBER]')
 		return res.status(500).json({ error: 'Failed to fetch subscriber count.' })
 	}
 })

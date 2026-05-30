@@ -3,6 +3,7 @@ import { client } from '../connections/db_connection'
 import { findTodaysNewsPerTag, findTodaysNewsFlat } from '../services/findTodaysNews'
 import { Rss_Clean_Table } from '../Types/Api_Types'
 import { webSearch } from '../services/webSearch'
+import { logger } from '../utils/logger'
 
 dotenv.config()
 
@@ -11,14 +12,14 @@ export async function startNewsFinding() {
   const data: Rss_Clean_Table[] = []
 
   for (const [key, value] of Object.entries(perTag)) {
-    console.log(key.toUpperCase(), " For Today: \n", value)
+    logger.info({ key: key.toUpperCase(), value }, 'For Today')
     for (let item of value) {
       data.push(item)
     }
   }
-  console.log('data', data)
+  logger.info({ data }, 'data')
   const flat = await findTodaysNewsFlat()
-  console.log('\nFlat result total:', flat.length)
+  logger.info({ flatTotal: flat.length }, 'Flat result total')
   let db = await client.connect()
 
   try {
@@ -37,15 +38,15 @@ export async function startNewsFinding() {
 
 
     const truncate = await db.query(`truncate table temp_rank_table`)
-    console.log(`Truncated Previous Data Rows`)
+    logger.info('Truncated Previous Data Rows')
     const insert = await db.query(query, values)
 
     if (insert.rowCount === 0) {
       await db.query('ROLLBACK')
-      console.log('Failed to insert into temp_rank_table')
+      logger.error('Failed to insert into temp_rank_table')
     }
 
-    console.log(`Sucessfully Inserted Todays ranked articles in database: ${insert.rowCount} Rows`)
+    logger.info(`Sucessfully Inserted Todays ranked articles in database: ${insert.rowCount} Rows`)
     await db.query('COMMIT')
 
     // Starting The WebSearch Pipeline
@@ -54,7 +55,7 @@ export async function startNewsFinding() {
 
   } catch (error) {
     await db.query('ROLLBACK')
-    console.log(error)
+    logger.error({ error })
   } finally {
     db.release()
   }

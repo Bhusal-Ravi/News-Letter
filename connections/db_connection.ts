@@ -1,5 +1,6 @@
 import pg from 'pg'
 import dotenv from 'dotenv'
+import { logger } from '../utils/logger'
 dotenv.config()
 
 const { Pool, Client } = pg
@@ -9,9 +10,10 @@ export const client = new Pool({
 })
 
 client.query('SELECT NOW()', (err, res) => {
-  try {
-    console.log('Db connected successfully')
-  } catch (error) {
-    console.log(error)
+  if (err) {
+    logger.error({ error: err }, 'Db connection check failed')
+    return
   }
+
+  logger.info('Db connected successfully')
 })

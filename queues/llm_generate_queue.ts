@@ -3,6 +3,7 @@ import { connection } from '../connections/reddis_connection'
 import { client } from '../connections/db_connection'
 import { Rss_Clean_Table, Temp_Rank_Table } from '../Types/Api_Types'
 import { AIMessage, createAgent, tool } from "langchain";
+import { logger } from '../utils/logger'
 
 
 
@@ -44,7 +45,7 @@ const LlmWorker = new Worker('Llm', async job => {
 
         const summary = String(response.messages[response.messages.length - 1].text ?? '').trim()
 
-        console.log(summary, '\n')
+    logger.info(summary)
 
         const query = `insert into final_rank_table
                         (guid, title, content, source, category, published_date,image_url)
@@ -71,7 +72,7 @@ const LlmWorker = new Worker('Llm', async job => {
 
 
         if (insert.rowCount !== 0) {
-            console.log(`Inserted News Article [${data.title.toUpperCase()}]into db \n`)
+            logger.info(`Inserted News Article [${data.title.toUpperCase()}]into db`)
         }
 
         return {
@@ -82,7 +83,7 @@ const LlmWorker = new Worker('Llm', async job => {
 
 
     } catch (error) {
-        console.error('[LLM/WORKER][ERROR]', error)
+        logger.error({ error }, '[LLM/WORKER][ERROR]')
         throw error
     } finally {
         db.release()
@@ -100,11 +101,11 @@ const LlmWorker = new Worker('Llm', async job => {
 })
 
 LlmWorker.on('failed', (job, error) => {
-    console.error('[LLM/WORKER][FAILED]', job?.id, job?.name, error)
+    logger.error({ jobId: job?.id, jobName: job?.name, error }, '[LLM/WORKER][FAILED]')
 })
 
 LlmWorker.on('error', (error) => {
-    console.error('[LLM/WORKER][ERROR EVENT]', error)
+    logger.error({ error }, '[LLM/WORKER][ERROR EVENT]')
 })
 
 export async function closeLlmResources() {
@@ -118,7 +119,7 @@ export async function closeLlmResources() {
 export async function startLlmSummarization(data: Temp_Rank_Table[]) {
 
     if (!data) {
-        console.log("No data to start webSearch")
+        logger.warn('No data to start webSearch')
         return
     }
 

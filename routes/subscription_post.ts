@@ -1,6 +1,7 @@
 import express from 'express'
 import { client } from '../connections/db_connection'
 import { verifyUnsubscribeToken } from '../utils/unsubscribeToken'
+import { logger } from '../utils/logger'
 
 const router = express.Router()
 
@@ -33,7 +34,7 @@ router.post('/unsubscribe', async (req, res) => {
 			db.release()
 		}
 	} catch (error) {
-		console.log(error)
+		logger.error({ error })
 
 		
 		return res.status(200).send('OK')

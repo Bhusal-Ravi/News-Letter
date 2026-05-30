@@ -1,6 +1,7 @@
 import express from 'express'
 import { client } from '../connections/db_connection'
 import { verifyUnsubscribeToken } from '../utils/unsubscribeToken'
+import { logger } from '../utils/logger'
 
 const router = express.Router()
 
@@ -46,7 +47,7 @@ router.post('/subscribe', async (req, res) => {
 			db.release()
 		}
 	} catch (error) {
-		console.error('[SUBSCRIBE]', error)
+		logger.error({ error }, '[SUBSCRIBE]')
 		return res.status(500).json({ error: 'Something went wrong. Please try again.' })
 	}
 })
@@ -77,7 +78,7 @@ router.get('/unsubscribe', async (req, res) => {
 			db.release()
 		}
 	} catch (error) {
-		console.log(error)
+		logger.error({ error })
 		return res.status(400).send('Invalid or expired unsubscribe token')
 	}
 })

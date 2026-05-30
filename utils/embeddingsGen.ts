@@ -1,5 +1,6 @@
 
 import { client } from '../connections/vogaye_connection'
+import { logger } from './logger'
 
 
 
@@ -15,7 +16,7 @@ export async function getEmbedding(text:string) {
     return res.data?.[0]?.embedding
   
   }catch(error){
-    console.log(error)
+    logger.error({ error })
   }
   
   

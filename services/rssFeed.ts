@@ -4,6 +4,7 @@ import { Rss_Clean_Table, Rss_Clean_Table_Embedding, Rss_Feed_Type } from '../Ty
 import { client  as db_client } from '../connections/db_connection'
 
 import { EmbeddingQueue } from '../queues/embedding_queue'
+import { logger } from '../utils/logger'
 
 const FLOW_BAR = '----------------------------------------'
 
@@ -56,8 +57,8 @@ export async function handleRssFeed(sources:string[],category:string){
 
         ))
 
-        console.log(`[RSS/FETCH] ${FLOW_BAR}`)
-        console.log('[RSS/FETCH] Feed fetch completed and structured format created')
+        logger.info(`[RSS/FETCH] ${FLOW_BAR}`)
+        logger.info('[RSS/FETCH] Feed fetch completed and structured format created')
 
         structuredWorldNews = structuredWorldNews.filter((item) => item.guid != null && item.guid !== "")
 
@@ -68,7 +69,7 @@ export async function handleRssFeed(sources:string[],category:string){
        
 
     }catch(error){
-        console.log('[RSS/FETCH][ERROR]', error)
+        logger.error({ error }, '[RSS/FETCH][ERROR]')
         throw error
     }finally{
         db?.release()
@@ -113,12 +114,12 @@ export async function physicalDedupe(structuredWorldNews:Rss_Clean_Table[]){
        
 
 
-        console.log(`[RSS/DEDUPE] ${FLOW_BAR}`)
-        console.log('[RSS/DEDUPE] Physical deduplication completed')
-        console.log('[RSS/DEDUPE] Articles after dedupe:', newStructuredWorldNews.length, 'before dedupe:', structuredWorldNews.length)
+        logger.info(`[RSS/DEDUPE] ${FLOW_BAR}`)
+        logger.info('[RSS/DEDUPE] Physical deduplication completed')
+        logger.info({ after: newStructuredWorldNews.length, before: structuredWorldNews.length }, '[RSS/DEDUPE] Articles after dedupe')
         return newStructuredWorldNews;
     }catch(error){
-        console.log('[RSS/DEDUPE][ERROR]', error)
+        logger.error({ error }, '[RSS/DEDUPE][ERROR]')
         throw error
     }finally{
         db?.release()
@@ -135,14 +136,14 @@ export async function createEmbedding(newStructuredWorldNews:Rss_Clean_Table[]){
 
         // Generate Embedding
         
-        console.log(`[RSS/QUEUE] ${FLOW_BAR}`)
-        console.log('[RSS/QUEUE] Publishing embedding job with article count:', text.length)
-    console.log('[RSS/QUEUE] Embedding job article titles:', articleTitles)
+        logger.info(`[RSS/QUEUE] ${FLOW_BAR}`)
+        logger.info({ count: text.length }, '[RSS/QUEUE] Publishing embedding job with article count')
+    logger.info({ titles: articleTitles }, '[RSS/QUEUE] Embedding job article titles')
         EmbeddingQueue.add('createEmbedding',{text:text,newStructuredWorldNews:newStructuredWorldNews})
 
        
     }catch(error){
-        console.log('[RSS/QUEUE][ERROR]', error)
+        logger.error({ error }, '[RSS/QUEUE][ERROR]')
         throw error
     }
 }

@@ -7,6 +7,7 @@ import { htmlMaker } from '../services/htmlMaker'
 import { resend } from '../connections/resend_gmail_connection'
 import { createUnsubscribeLink } from '../utils/unsubscribeToken'
 import { createRedirectLink } from '../utils/articleRedirect'
+import { logger } from '../utils/logger'
 
 
 
@@ -26,7 +27,7 @@ const emailWorker= new Worker('email',async job=>{
                         redirect_url: redirectUrl,
                     }
                 } catch (error) {
-                    console.log('[EMAIL/WORKER] Failed to create redirect link', error)
+                    logger.warn({ error }, '[EMAIL/WORKER] Failed to create redirect link')
                     return item
                 }
             })
@@ -55,15 +56,13 @@ const emailWorker= new Worker('email',async job=>{
         })
 
         if (error) {
-            console.error("EMAIL FAILED") 
-            console.error(error) 
+            logger.error({ error }, 'EMAIL FAILED')
             throw new Error(`Resend failed: ${error.message}`)
         }
 
         }catch(error){
             
-            console.error("WORKER ERROR") 
-            console.error(error)
+            logger.error({ error }, 'WORKER ERROR')
             throw error 
         }
        
@@ -78,7 +77,7 @@ const emailWorker= new Worker('email',async job=>{
 })
 
 emailWorker.on('completed',async (job)=>{
-    console.log(`Email sent to ${job.name} successfully`)
+    logger.info(`Email sent to ${job.name} successfully`)
 })
 
 
@@ -94,7 +93,8 @@ export async function startSendEmail(data:Final_Rank_Table[]){
         const get= await db.query(`select * from users where subscribed=$1`,[true])
 
         if(get.rowCount===0){
-            return console.log("No users are subscribed yet")
+            logger.warn('No users are subscribed yet')
+            return
         }
 
         const emails:Email_Type[]= get.rows
@@ -117,7 +117,7 @@ export async function startSendEmail(data:Final_Rank_Table[]){
                                       set sent=true where guid= Any($1::text[])`,[guid])
 
     }catch(error){
-        console.log(error)
+        logger.error({ error })
     }finally{
        db.release()
     }

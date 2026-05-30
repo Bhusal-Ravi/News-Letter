@@ -5,6 +5,7 @@ import { client } from "../connections/vogaye_connection";
 import { client as db_client } from '../connections/db_connection';
 import { insertIntoTags } from '../sql/insert_into_tag';
 import { Tags } from '../Types/Api_Types';
+import { logger } from '../utils/logger';
 
 
 dotenv.config();
@@ -34,7 +35,7 @@ async function createTags() {
         await insertIntoTags(tagsWithEmbeddings)
 
     } catch (error) {
-        console.log(error)
+        logger.error({ error })
     }
 }
 

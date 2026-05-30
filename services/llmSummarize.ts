@@ -3,6 +3,7 @@ import { client } from '../connections/db_connection'
 import { startWebSearch } from '../queues/web_search_queue'
 import { Rss_Clean_Table } from '../Types/Api_Types'
 import { startLlmSummarization } from '../queues/llm_generate_queue'
+import { logger } from '../utils/logger'
 
 dotenv.config()
 
@@ -17,15 +18,15 @@ export async function llmSummarize(guid: string) {
        RETURNING *`
         const get = await db.query(query, [guid])
         if (get.rowCount === 0) {
-            console.log("Already queued or not found for Llm summarization ")
+            logger.warn('Already queued or not found for Llm summarization')
             return
         }
 
-        console.log('Started Llm summarization')
+        logger.info('Started Llm summarization')
         await startLlmSummarization(get.rows)
 
     } catch (error) {
-        console.error('[LLM/SUMMARIZE][ERROR]', error)
+        logger.error({ error }, '[LLM/SUMMARIZE][ERROR]')
     } finally {
         db.release()
     }

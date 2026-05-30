@@ -5,6 +5,7 @@ import { client } from '../connections/db_connection'
 import { Rss_Clean_Table } from '../Types/Api_Types'
 import { tvly } from '../connections/tavily_connection'
 import { llmSummarize } from '../services/llmSummarize'
+import { logger } from '../utils/logger'
 
 
 
@@ -51,7 +52,7 @@ const WebSearchWorker = new Worker('websearch', async job => {
 
 
     } catch (error) {
-        console.error('[WEBSEARCH/WORKER][ERROR]', error)
+        logger.error({ error }, '[WEBSEARCH/WORKER][ERROR]')
         throw error
     } finally {
         db.release()
@@ -67,11 +68,11 @@ const WebSearchWorker = new Worker('websearch', async job => {
 })
 
 WebSearchWorker.on('failed', (job, error) => {
-    console.error('[WEBSEARCH/WORKER][FAILED]', job?.id, job?.name, error)
+    logger.error({ jobId: job?.id, jobName: job?.name, error }, '[WEBSEARCH/WORKER][FAILED]')
 })
 
 WebSearchWorker.on('error', (error) => {
-    console.error('[WEBSEARCH/WORKER][ERROR EVENT]', error)
+    logger.error({ error }, '[WEBSEARCH/WORKER][ERROR EVENT]')
 })
 
 export async function closeWebSearchResources() {
@@ -82,9 +83,7 @@ export async function closeWebSearchResources() {
 }
 
 WebSearchWorker.on('completed', async (job, data) => {
-    console.log('RowCount', data.rowCount, '\n')
-    console.log('content', data.content, '\n')
-    console.log('image', data.image, '\n')
+    logger.info({ rowCount: data.rowCount, content: data.content, image: data.image }, '[WEBSEARCH/WORKER] Completed')
 
     await llmSummarize(data.guid)
 })
@@ -94,7 +93,7 @@ WebSearchWorker.on('completed', async (job, data) => {
 export async function startWebSearch(data: Rss_Clean_Table[]) {
 
     if (!data) {
-        console.log("No data to start webSearch")
+        logger.warn('No data to start webSearch')
         return
     }
 

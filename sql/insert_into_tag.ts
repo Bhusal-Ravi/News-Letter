@@ -1,5 +1,6 @@
 import { client } from "../connections/db_connection";
 import { Tags } from "../Types/Api_Types";
+import { logger } from "../utils/logger";
 
 
 
@@ -21,11 +22,11 @@ export async function insertIntoTags(data: Tags[]) {
 
         const insert = await db.query(query, actualData)
 
-        console.log("Inserted rows", insert.rowCount)
+        logger.info({ rowCount: insert.rowCount }, 'Inserted rows')
 
 
     } catch (error) {
-        console.log(error)
+        logger.error({ error })
     } finally {
         if (db) {
             db.release()

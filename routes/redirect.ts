@@ -1,5 +1,6 @@
 import express from 'express'
 import { client } from '../connections/db_connection'
+import { logger } from '../utils/logger'
 
 const router = express.Router()
 
@@ -64,7 +65,7 @@ router.get('/r/:code', async (req, res) => {
 
         return res.redirect(302, update.rows[0].original_url)
     } catch (error) {
-        console.log(error)
+        logger.error({ error })
         return res.status(500).send('Redirect failed')
     }
 })

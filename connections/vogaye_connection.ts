@@ -2,21 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 import {VoyageAIClient} from 'voyageai'
+import { logger } from '../utils/logger'
 export const client= new VoyageAIClient({apiKey:process.env.VOYAGE_API_KEY})
 
- if(client) console.log("Voyage Connected Successfully")
-
-// async function checkVoyageConnection(){
-//     try{
-//         const res=await client.embed({
-//             input:"Connection",
-//             model:'voyage-4-lite'
-//         })
-        
-//         console.log('Voyage Connected')
-//     }catch(error){
-//         console.log(error)
-//     }
-// }
-
-// checkVoyageConnection()
+ if(client) logger.info('Voyage Connected Successfully')

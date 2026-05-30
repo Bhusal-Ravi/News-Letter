@@ -2,6 +2,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 import express from 'express';
 import cors from 'cors';
+import { logger } from './utils/logger'
 
 import './connections/vogaye_connection'
 import './connections/reddis_connection'
@@ -54,13 +55,13 @@ const JobRepeatWorker = new Worker('repeat', async job => {
 	const jobId = job.name
 
 	if (jobId === 'start') {
-		console.log(`[SCHEDULER] ${FLOW_BAR}`)
-		console.log('[SCHEDULER] Initiated next pull phase of news')
+		logger.info(`[SCHEDULER] ${FLOW_BAR}`)
+		logger.info('[SCHEDULER] Initiated next pull phase of news')
 		await pullRssFeed()
 	}
 
 	if (jobId === 'startnewsgeneration') {
-		console.log("[SCHEDULER] Starting the finding todays news job")
+		logger.info('[SCHEDULER] Starting the finding todays news job')
 		await startNewsFinding()
 	}
 
@@ -87,7 +88,7 @@ async function shutdown(signal: string) {
 	}
 	isShuttingDown = true
 
-	console.log(`[SERVER] Received ${signal}, closing Redis resources...`)
+	logger.info(`[SERVER] Received ${signal}, closing Redis resources...`)
 
 	try {
 		await Promise.all([
@@ -97,9 +98,9 @@ async function shutdown(signal: string) {
 			closeLlmResources(),
 			closeEmbeddingResources(),
 		])
-		console.log('[SERVER] Redis resources closed')
+		logger.info('[SERVER] Redis resources closed')
 	} catch (error) {
-		console.error('[SERVER] Error while closing Redis resources', error)
+		logger.error({ error }, '[SERVER] Error while closing Redis resources')
 	} finally {
 		process.exit(0)
 	}
@@ -130,7 +131,7 @@ async function scheduleOperation() {
 	 await JobRepeatQueue.upsertJobScheduler(
 		'startnewsgeneration',
 		{
-			pattern: '0 0 11 * * *',
+			pattern: `${process.env.START_NEWS_TIME}`,
 			tz: 'Asia/Kathmandu'
 		},
 		{	name: 'startnewsgeneration',
@@ -145,7 +146,7 @@ async function scheduleOperation() {
 	 await JobRepeatQueue.upsertJobScheduler(
 		'startemailqueue',
 		{
-			pattern: '0 5 11 * * *',
+			pattern: `${process.env.START_EMAIL_TIME}`,
 			tz: 'Asia/Kathmandu'
 		},
 		{	name: 'startemailqueue',
@@ -164,7 +165,7 @@ void createRedirectLinksTable()
 async function bootstrap() {
     await scheduleOperation()
     app.listen(3000, () => {
-        console.log('[SERVER] Server started on port 3000');
+		logger.info('[SERVER] Server started on port 3000');
     });
 }
 
