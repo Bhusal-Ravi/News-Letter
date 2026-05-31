@@ -22,6 +22,7 @@ import redirectRouter from './routes/redirect'
 import healthRouter from './routes/health'
 import usersNumberRouter from './routes/users_number'
 import dashboardRouter from './routes/dashboard'
+import newsScrollRoute from './routes/news_scroll'
 import { createRedirectLinksTable } from './sql/create_redirect_links_table'
 
 const FLOW_BAR = '----------------------------------------'
@@ -45,6 +46,7 @@ app.use(redirectRouter);
 app.use(healthRouter);
 app.use(usersNumberRouter);
 app.use(dashboardRouter);
+app.use(newsScrollRoute)
 
 app.get('/', async (req, res) => {
 	res.json('Server Healthy');
