@@ -358,6 +358,6 @@ ISC
 
 ---
 
-**Last Updated**: May 2026  
+
 **Maintainer**: Bhusal-Ravi
 
