@@ -15,8 +15,9 @@ export async function insertIntoTags(data: Tags[]) {
             const base = i * 4
             actualData.push(data[i].tags, data[i].category, `[${data[i].embedding!.join(',')}]`, data[i].articles_per_tag)
             values.push(`($${base + 1},$${base + 2},$${base + 3}::vector,$${base + 4})`)
+            
         }
-        await db.query('BEGIN')
+        await db.query('BEGIN');
 
         const truncate= await db.query(`truncate table tags_embedding `)
 
