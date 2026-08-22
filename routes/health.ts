@@ -18,7 +18,7 @@ router.get('/healthz', async (req, res) => {
     if (wantsBadge) {
       return res.status(200).json({
         schemaVersion: 1,
-        label: 'links.bhusalravi.com.np',
+        label: 'News Letter',
         message: healthy ? 'Currently Up and running' : 'Currently offline',
         color: healthy ? 'brightgreen' : 'red'
       })
@@ -31,7 +31,7 @@ router.get('/healthz', async (req, res) => {
     if (wantsBadge) {
       return res.status(200).json({
         schemaVersion: 1,
-        label: 'links.bhusalravi.com.np',
+        label: 'News Letter',
         message: 'Currently offline',
         color: 'red'
       })
