@@ -15,10 +15,7 @@ export function htmlMaker(
 
   const truncate = (text: string) => text || "";
 
-  // Site fonts: JetBrains Mono (labels/meta), Libre Caslon Text (headings).
-  // Both pulled in via @import below; most clients fall back to the
-  // monospace / serif stacks, which is fine — it's the same fallback
-  // behavior the site itself relies on.
+ 
   const MONO = "'JetBrains Mono', 'Courier New', monospace";
   const SERIF = "'Libre Caslon Text', Georgia, 'Times New Roman', serif";
 
@@ -120,35 +117,35 @@ export function htmlMaker(
           </p>
 
           ${
-            story.redirect_url
-              ? `
-          <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;border-top:1px solid rgba(207,196,197,0.4);">
-            <tr>
-              <td style="padding-top:16px;">
-                
-                  href="${story.redirect_url}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style="
-                    display:inline-block;
-                    color:#000000;
-                    text-decoration:none;
-                    border-bottom:1px solid rgba(0,0,0,0.25);
-                    padding-bottom:3px;
-                    font-size:10px;
-                    font-weight:700;
-                    letter-spacing:0.15em;
-                    text-transform:uppercase;
-                    font-family:${MONO};
-                  "
-                >
-                  Continue Reading &#8594;
-                </a>
-              </td>
-            </tr>
-          </table>`
-              : ""
-          }
+  story.redirect_url
+    ? `
+<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:18px;border-top:1px solid rgba(207,196,197,0.4);">
+  <tr>
+    <td style="padding-top:16px;">
+      <a
+        href="${story.redirect_url}"
+        target="_blank"
+        rel="noopener noreferrer"
+        style="
+          display:inline-block;
+          color:#000000;
+          text-decoration:none;
+          border-bottom:1px solid rgba(0,0,0,0.25);
+          padding-bottom:3px;
+          font-size:10px;
+          font-weight:700;
+          letter-spacing:0.15em;
+          text-transform:uppercase;
+          font-family:${MONO};
+        "
+      >
+        Continue Reading &#8594;
+      </a>
+    </td>
+  </tr>
+</table>`
+    : ""
+}
         </td>
       </tr>
     </table>
@@ -380,8 +377,8 @@ export function htmlMaker(
                       subscribed to this newsletter.
                     </p>
 
-                    <div style="margin-top:20px;">
-                      
+                   <div style="margin-top:20px;">
+                      <a
                         href="${unsubscribeLink}"
                         style="
                           display:inline-block;

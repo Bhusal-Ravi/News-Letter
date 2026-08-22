@@ -1,5 +1,7 @@
 # News Letter - RSS Feed to Vector Database Pipeline
 
+V2 FIX: Restored Offline Database , Changed Redis Connection to New , Restored Offline Backend Server  
+
 This project ingests world news from multiple RSS feeds, deduplicates and enriches articles with embeddings, and stores them in a PostgreSQL vector database for downstream newsletter workflows.
 
 ## ETL
